@@ -1,11 +1,11 @@
-var jshover = function()
+let jshover = function()
 {
-	var menuDiv = document.getElementById("horizontal-multilevel-menu")
+	let menuDiv = document.getElementById("horizontal-multilevel-menu")
 	if (!menuDiv)
 		return;
 
-	var sfEls = menuDiv.getElementsByTagName("li");
-	for (var i=0; i<sfEls.length; i++) 
+	let sfEls = menuDiv.getElementsByTagName("li");
+	for (let i=0; i<sfEls.length; i++) 
 	{
 		sfEls[i].onmouseover=function()
 		{

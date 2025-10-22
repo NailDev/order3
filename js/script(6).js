@@ -95,7 +95,7 @@
 
 		loadOnScroll: function()
 		{
-			var scrollTop = BX.GetWindowScrollPos().scrollTop,
+			let scrollTop = BX.GetWindowScrollPos().scrollTop,
 				containerBottom = BX.pos(this.container).bottom;
 
 			if (scrollTop + window.innerHeight > containerBottom)
@@ -108,7 +108,7 @@
 		{
 			if (this.navParams.NavPageNomer < this.navParams.NavPageCount)
 			{
-				var data = {};
+				let data = {};
 				data['action'] = 'showMore';
 				data['PAGEN_' + this.navParams.NavNum] = this.navParams.NavPageNomer + 1;
 
@@ -123,7 +123,7 @@
 
 		bigDataLoad: function()
 		{
-			var url = 'https://analytics.bitrix.info/crecoms/v1_0/recoms.php',
+			let url = 'https://analytics.bitrix.info/crecoms/v1_0/recoms.php',
 				data = BX.ajax.prepareData(this.bigData.params);
 
 			if (data)
@@ -131,7 +131,7 @@
 				url += (url.indexOf('?') !== -1 ? '&' : '?') + data;
 			}
 
-			var onReady = BX.delegate(function(result){
+			let onReady = BX.delegate(function(result){
 				this.sendRequest({
 					action: 'deferredLoad',
 					bigData: 'Y',
@@ -160,7 +160,7 @@
 
 		sendRequest: function(data)
 		{
-			var defaultData = {
+			let defaultData = {
 				siteId: this.siteId,
 				template: this.template,
 				parameters: this.parameters
@@ -226,7 +226,7 @@
 			if (!result)
 				return;
 
-			var position = bigData ? this.bigData.rows : {};
+			let position = bigData ? this.bigData.rows : {};
 
 			this.processItems(result.items, BX.util.array_keys(position));
 		},
@@ -236,10 +236,10 @@
 			if (!itemsHtml)
 				return;
 
-			var processed = BX.processHTML(itemsHtml, false),
+			let processed = BX.processHTML(itemsHtml, false),
 				temporaryNode = BX.create('DIV');
 
-			var items, k, origRows;
+			let items, k, origRows;
 
 			temporaryNode.innerHTML = processed.HTML;
 			items = temporaryNode.querySelectorAll('[data-entity="items-row"]');
@@ -272,7 +272,7 @@
 					finish: {opacity: 100},
 					transition: BX.easing.makeEaseOut(BX.easing.transitions.quad),
 					step: function(state){
-						for (var k in items)
+						for (let k in items)
 						{
 							if (items.hasOwnProperty(k))
 							{
@@ -281,7 +281,7 @@
 						}
 					},
 					complete: function(){
-						for (var k in items)
+						for (let k in items)
 						{
 							if (items.hasOwnProperty(k))
 							{
@@ -300,8 +300,8 @@
 			if (!paginationHtml)
 				return;
 
-			var pagination = document.querySelectorAll('[data-pagination-num="' + this.navParams.NavNum + '"]');
-			for (var k in pagination)
+			let pagination = document.querySelectorAll('[data-pagination-num="' + this.navParams.NavNum + '"]');
+			for (let k in pagination)
 			{
 				if (pagination.hasOwnProperty(k))
 				{
@@ -315,13 +315,13 @@
 			if (!epilogueHtml)
 				return;
 
-			var processed = BX.processHTML(epilogueHtml, false);
+			let processed = BX.processHTML(epilogueHtml, false);
 			BX.ajax.processScripts(processed.SCRIPT);
 		},
 
 		showHeader: function(animate)
 		{
-			var parentNode = BX.findParent(this.container, {attr: {'data-entity': 'parent-container'}}),
+			let parentNode = BX.findParent(this.container, {attr: {'data-entity': 'parent-container'}}),
 				header;
 
 			if (parentNode && BX.type.isDomNode(parentNode))

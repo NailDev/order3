@@ -1,6 +1,6 @@
 function JCTitleSearchAG(arParams)
 {
-	var _this = this;
+	let _this = this;
 
 	this.arParams = {
 		'AJAX_PAGE': arParams.AJAX_PAGE,
@@ -37,12 +37,12 @@ function JCTitleSearchAG(arParams)
 		}
 
 		_this.RESULT.style.display = _this.RESULT.innerHTML !== '' ? 'block' : 'none';
-		var pos = _this.adjustResultNode();
+		let pos = _this.adjustResultNode();
 
 		//adjust left column to be an outline
-		var res_pos;
-		var th;
-		var tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
+		let res_pos;
+		let th;
+		let tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
 		if(tbl)
 		{
 			th = BX.findChild(tbl, {'tag':'th'}, true);
@@ -50,10 +50,10 @@ function JCTitleSearchAG(arParams)
 
 		if(th)
 		{
-			var tbl_pos = BX.pos(tbl);
+			let tbl_pos = BX.pos(tbl);
 			tbl_pos.width = tbl_pos.right - tbl_pos.left;
 
-			var th_pos = BX.pos(th);
+			let th_pos = BX.pos(th);
 			th_pos.width = th_pos.right - th_pos.left;
 			th.style.width = th_pos.width + 'px';
 
@@ -75,7 +75,7 @@ function JCTitleSearchAG(arParams)
 			}
 		}
 
-		var fade;
+		let fade;
 		if(tbl) fade = BX.findChild(_this.RESULT, {'class':'title-search-fader'}, true);
 		if(fade && th)
 		{
@@ -90,12 +90,12 @@ function JCTitleSearchAG(arParams)
 
 	this.onKeyPress = function(keyCode)
 	{
-		var tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
+		let tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
 		if(!tbl)
 			return false;
 
-		var i;
-		var cnt = tbl.rows.length;
+		let i;
+		let cnt = tbl.rows.length;
 
 		switch (keyCode)
 		{
@@ -109,7 +109,7 @@ function JCTitleSearchAG(arParams)
 			if(_this.RESULT.style.display == 'none')
 				_this.RESULT.style.display = 'block';
 
-			var first = -1;
+			let first = -1;
 			for(i = 0; i < cnt; i++)
 			{
 				if(!BX.findChild(tbl.rows[i], {'class':'title-search-separator'}, true))
@@ -139,7 +139,7 @@ function JCTitleSearchAG(arParams)
 			if(_this.RESULT.style.display == 'none')
 				_this.RESULT.style.display = 'block';
 
-			var last = -1;
+			let last = -1;
 			for(i = cnt-1; i >= 0; i--)
 			{
 				if(!BX.findChild(tbl.rows[i], {'class':'title-search-separator'}, true))
@@ -174,7 +174,7 @@ function JCTitleSearchAG(arParams)
 					{
 						if(!BX.findChild(tbl.rows[i], {'class':'title-search-separator'}, true))
 						{
-							var a = BX.findChild(tbl.rows[i], {'tag':'a'}, true);
+							let a = BX.findChild(tbl.rows[i], {'tag':'a'}, true);
 							if(a)
 							{
 								window.location = a.href;
@@ -213,8 +213,8 @@ function JCTitleSearchAG(arParams)
 				{
 					if(_this.WAIT)
 					{
-						var pos = BX.pos(_this.INPUT);
-						var height = (pos.bottom - pos.top)-2;
+						let pos = BX.pos(_this.INPUT);
+						let height = (pos.bottom - pos.top)-2;
 						_this.WAIT.style.top = (pos.top+1) + 'px';
 						_this.WAIT.style.height = height + 'px';
 						_this.WAIT.style.width = height + 'px';
@@ -296,22 +296,22 @@ function JCTitleSearchAG(arParams)
 
 	this.UnSelectAll = function()
 	{
-		var tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
+		let tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
 		if(tbl)
 		{
-			var cnt = tbl.rows.length;
-			for(var i = 0; i < cnt; i++)
+			let cnt = tbl.rows.length;
+			for(let i = 0; i < cnt; i++)
 				tbl.rows[i].className = '';
 		}
 	};
 
 	this.EnableMouseEvents = function()
 	{
-		var tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
+		let tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
 		if(tbl)
 		{
-			var cnt = tbl.rows.length;
-			for(var i = 0; i < cnt; i++)
+			let cnt = tbl.rows.length;
+			for(let i = 0; i < cnt; i++)
 				if(!BX.findChild(tbl.rows[i], {'class':'title-search-separator'}, true))
 				{
 					tbl.rows[i].id = 'row_' + i;
@@ -363,7 +363,7 @@ function JCTitleSearchAG(arParams)
 			return { top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 };
 		}
 
-		var pos = BX.pos(_this.CONTAINER);
+		let pos = BX.pos(_this.CONTAINER);
 
 		_this.RESULT.style.position = 'absolute';
 		_this.RESULT.style.top = (pos.bottom + 2) + 'px';
@@ -421,7 +421,7 @@ function JCTitleSearchAG(arParams)
 		BX.bind(this.INPUT, 'bxchange', function() {_this.onChange()});
 		BX.bind(this.INPUT, 'paste', function(e) {setTimeout(function(){_this.onChange();}, 200);});
 
-		var fixedParent = BX.findParent(this.CONTAINER, BX.is_fixed);
+		let fixedParent = BX.findParent(this.CONTAINER, BX.is_fixed);
 		if(BX.type.isElementNode(fixedParent))
 		{
 			BX.bind(window, 'scroll', BX.throttle(this.onScroll, 100, this));

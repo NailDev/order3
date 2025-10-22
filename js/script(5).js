@@ -1,14 +1,14 @@
 document.addEventListener("DOMContentLoaded", function ( event ) {
 
 	init_img_lazy();
-	var params = window
+	let params = window
 	.location
 	.search
 	.replace('?','')
 	.split('&')
 	.reduce(
 		function(p,e){
-			var a = e.split('=');
+			let a = e.split('=');
 			p[ decodeURIComponent(a[0])] = decodeURIComponent(a[1]);
 			return p;
 		},
@@ -23,21 +23,21 @@ document.addEventListener("DOMContentLoaded", function ( event ) {
 
 
 window.addEventListener( "pageshow", function ( event ) {
-var historyTraversal = event.persisted || ( typeof window.performance != "undefined" && window.performance.navigation.type === 2 );
+let historyTraversal = event.persisted || ( typeof window.performance != "undefined" && window.performance.navigation.type === 2 );
 if ( historyTraversal ) {
 	init_img_lazy();
 
 
 
 
-var params = window
+let params = window
 .location
 .search
 .replace('?','')
 .split('&')
 .reduce(
 	function(p,e){
-		var a = e.split('=');
+		let a = e.split('=');
 		p[ decodeURIComponent(a[0])] = decodeURIComponent(a[1]);
 		return p;
 	},
@@ -59,7 +59,7 @@ init_img_lazy();
 
 function ShowBasketButton(cnt, id, product_id, $this)
 {
-	 var $contain = $this.closest('[data-contain-main]');
+	 let $contain = $this.closest('[data-contain-main]');
 	 if (cnt>0)
 		$contain.addClass($contain.data('count-visible'));
 	else
@@ -71,14 +71,13 @@ $(document).ready(function(){
 
 
 
-//Добавление
+
 	$("body").on( "click", ".js-add-in-basket", function() {
-		var $this = $(this);
-		var id=$this.attr('id');
-		var cnt=$('#quantity_'+id).val();
+		let $this = $(this);
+		let id=$this.attr('id');
+		let cnt=$('#quantity_'+id).val();
 		if (cnt<=0) cnt=1;
-		//if (cnt>0)
-		//{
+
 			$.ajax({
 				type: "POST",
 				dataType:"json",
@@ -93,11 +92,10 @@ $(document).ready(function(){
 					basket_items_calculation(msg.items, msg.sum);
 					
 				});
-		//}
-		//return false;
+		
 	});
 
-//Удаление
+
 $('body').on('click', '.delete_basket', function() {
 	let id=$(this).attr('data-id');
 	$.ajax({
@@ -116,7 +114,7 @@ $('body').on('click', '.delete_basket', function() {
 			}
 
 		});
-	//return false;
+	
 });
 
 
@@ -132,7 +130,7 @@ function init_img_lazy(){
 
 }
 function afterLoadLazy(element){
-	var classLoadRemove = element.data('class-load-remove');
+	let classLoadRemove = element.data('class-load-remove');
 
 	if(classLoadRemove) {
 		element.parent().removeClass(classLoadRemove);
@@ -140,41 +138,41 @@ function afterLoadLazy(element){
 	}
 }
 
-var inProgress = false;
+let inProgress = false;
 $(window).scroll(function() {
 	let top= 0 ;
 	if($('.load_more').offset()){
 		top=$('.load_more').offset().top;
 	}	
 	if($(window).scrollTop()  >= parseInt(top - 500) && !inProgress) {
-		var targetContainer = $('.catalog_list'),          //  Контейнер, в котором хранятся элементы
-		url =  $('.load_more').attr('data-url');    //  URL, из которого будем брать элементы
+		let targetContainer = $('.catalog_list'),          
+		url =  $('.load_more').attr('data-url');    
 		if (url !== undefined) {
-			var type = $('.load_more').attr('data-type'); 
+			let type = $('.load_more').attr('data-type'); 
 			$('.load_more').addClass('unit-pagination-custom--load');
-//$('.preloader_bl').show();
+
 			inProgress = true;
-//$('.unit-pagination-custom').addClass('.unit-pagination-custom--load');
+
 			$.ajax({
 				type: 'POST',
 				url: url,
 				data: { ajax23 : 'y' },
 				dataType: 'html',
 				success: function(data){
-					//  Удаляем старую навигацию
+					
 					$('.load_more').remove();
 					if(type == 'search'){
 
-						var targetContainer = $('.catalog_list');
-						var elements = $(data).find('.catalog_item'),  //  Ищем элементы
-							pagination = $(data).find('.load_more');//  Ищем навигацию
+						let targetContainer = $('.catalog_list');
+						let elements = $(data).find('.catalog_item'),  
+							pagination = $(data).find('.load_more');
 					}else{ 
-						var targetContainer = $('.catalog_list');
-						var elements = $(data).find('.catalog_item'),  //  Ищем элементы
-							pagination = $(data).find('.load_more');//  Ищем навигацию
+						let targetContainer = $('.catalog_list');
+						let elements = $(data).find('.catalog_item'), 
+							pagination = $(data).find('.load_more');
 					}
-						targetContainer.append(elements);   //  Добавляем посты в конец контейнера
-						$('.after_nav').append(pagination); //  добавляем навигацию следом
+						targetContainer.append(elements);   
+						$('.after_nav').append(pagination); 
 
 					init_img_lazy();
 					if($( window ).width()>'837'){
@@ -199,5 +197,4 @@ $(window).scroll(function() {
 
 
 
-//doc
 });
