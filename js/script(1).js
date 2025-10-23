@@ -1,395 +1,380 @@
-function JCTitleSearch(arParams)
-{
-	let _this = this;
+function JCTitleSearch(arParams) {
+  let _this = this;
 
-	this.arParams = {
-		'AJAX_PAGE': arParams.AJAX_PAGE,
-		'CONTAINER_ID': arParams.CONTAINER_ID,
-		'INPUT_ID': arParams.INPUT_ID,
-		'MIN_QUERY_LEN': parseInt(arParams.MIN_QUERY_LEN)
-	};
-	if(arParams.WAIT_IMAGE)
-		this.arParams.WAIT_IMAGE = arParams.WAIT_IMAGE;
-	if(arParams.MIN_QUERY_LEN <= 0)
-		arParams.MIN_QUERY_LEN = 1;
+  this.arParams = {
+    AJAX_PAGE: arParams.AJAX_PAGE,
+    CONTAINER_ID: arParams.CONTAINER_ID,
+    INPUT_ID: arParams.INPUT_ID,
+    MIN_QUERY_LEN: parseInt(arParams.MIN_QUERY_LEN),
+  };
+  if (arParams.WAIT_IMAGE) this.arParams.WAIT_IMAGE = arParams.WAIT_IMAGE;
+  if (arParams.MIN_QUERY_LEN <= 0) arParams.MIN_QUERY_LEN = 1;
 
-	this.cache = [];
-	this.cache_key = null;
+  this.cache = [];
+  this.cache_key = nu;
+  this.startText = "";
+  this.running = false;
+  this.currentRow = -1;
+  this.RESULT = null;
+  this.CONTAINER = null;
+  this.INPUT = null;
+  this.WAIT = null;
 
-	this.startText = '';
-	this.running = false;
-	this.currentRow = -1;
-	this.RESULT = null;
-	this.CONTAINER = null;
-	this.INPUT = null;
-	this.WAIT = null;
+  this.ShowResult = function (result) {
+    if (BX.type.isString(result)) {
+      _this.RESULT.innerHTML = result;
+    }
 
-	this.ShowResult = function(result)
-	{
-		if(BX.type.isString(result))
-		{
-			_this.RESULT.innerHTML = result;
-		}
+    _this.RESULT.style.display =
+      _this.RESULT.innerHTML !== "" ? "block" : "none";
+    let pos = _this.adjustResultNode();
+    let res_pos;
+    let th;
+    let tbl = BX.findChild(
+      _this.RESULT,
+      { tag: "table", class: "title-search-result" },
+      true
+    );
+    if (tbl) {
+      th = BX.findChild(tbl, { tag: "th" }, true);
+    }
 
-		_this.RESULT.style.display = _this.RESULT.innerHTML !== '' ? 'block' : 'none';
-		let pos = _this.adjustResultNode();
+    if (th) {
+      let tbl_pos = BX.pos(tbl);
+      tbl_pos.width = tbl_pos.right - tbl_pos.left;
 
-		//adjust left column to be an outline
-		let res_pos;
-		let th;
-		let tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
-		if(tbl)
-		{
-			th = BX.findChild(tbl, {'tag':'th'}, true);
-		}
+      let th_pos = BX.pos(th);
+      th_pos.width = th_pos.right - th_pos.left;
+      th.style.width = th_pos.width + "px";
 
-		if(th)
-		{
-			let tbl_pos = BX.pos(tbl);
-			tbl_pos.width = tbl_pos.right - tbl_pos.left;
+      _this.RESULT.style.width = pos.width + th_pos.width + "px";
 
-			let th_pos = BX.pos(th);
-			th_pos.width = th_pos.right - th_pos.left;
-			th.style.width = th_pos.width + 'px';
+      _this.RESULT.style.left = pos.left - th_pos.width - 1 + "px";
 
-			_this.RESULT.style.width = (pos.width + th_pos.width) + 'px';
+      if (tbl_pos.width - th_pos.width > pos.width)
+        _this.RESULT.style.width = pos.width + th_pos.width - 1 + "px";
 
-			//Move table to left by width of the first column
-			_this.RESULT.style.left = (pos.left - th_pos.width - 1)+ 'px';
+      tbl_pos = BX.pos(tbl);
+      res_pos = BX.pos(_this.RESULT);
+      if (res_pos.right > tbl_pos.right) {
+        _this.RESULT.style.width = tbl_pos.right - tbl_pos.left + "px";
+      }
+    }
 
-			//Shrink table when it's too wide
-			if((tbl_pos.width - th_pos.width) > pos.width)
-				_this.RESULT.style.width = (pos.width + th_pos.width -1) + 'px';
+    let fade;
+    if (tbl)
+      fade = BX.findChild(_this.RESULT, { class: "title-search-fader" }, true);
+    if (fade && th) {
+      res_pos = BX.pos(_this.RESULT);
+      fade.style.left = res_pos.right - res_pos.left - 18 + "px";
+      fade.style.width = 18 + "px";
+      fade.style.top = 0 + "px";
+      fade.style.height = res_pos.bottom - res_pos.top + "px";
+      fade.style.display = "block";
+    }
+  };
 
-			//Check if table is too wide and shrink result div to it's width
-			tbl_pos = BX.pos(tbl);
-			res_pos = BX.pos(_this.RESULT);
-			if(res_pos.right > tbl_pos.right)
-			{
-				_this.RESULT.style.width = (tbl_pos.right - tbl_pos.left) + 'px';
-			}
-		}
+  this.onKeyPress = function (keyCode) {
+    let tbl = BX.findChild(
+      _this.RESULT,
+      { tag: "table", class: "title-search-result" },
+      true
+    );
+    if (!tbl) return false;
 
-		let fade;
-		if(tbl) fade = BX.findChild(_this.RESULT, {'class':'title-search-fader'}, true);
-		if(fade && th)
-		{
-			res_pos = BX.pos(_this.RESULT);
-			fade.style.left = (res_pos.right - res_pos.left - 18) + 'px';
-			fade.style.width = 18 + 'px';
-			fade.style.top = 0 + 'px';
-			fade.style.height = (res_pos.bottom - res_pos.top) + 'px';
-			fade.style.display = 'block';
-		}
-	};
+    let i;
+    let cnt = tbl.rows.length;
 
-	this.onKeyPress = function(keyCode)
-	{
-		let tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
-		if(!tbl)
-			return false;
+    switch (keyCode) {
+      case 27:
+        _this.RESULT.style.display = "none";
+        _this.currentRow = -1;
+        _this.UnSelectAll();
+        return true;
 
-		let i;
-		let cnt = tbl.rows.length;
+      case 40:
+        if (_this.RESULT.style.display == "none")
+          _this.RESULT.style.display = "block";
 
-		switch (keyCode)
-		{
-		case 27: // escape key - close search div
-			_this.RESULT.style.display = 'none';
-			_this.currentRow = -1;
-			_this.UnSelectAll();
-		return true;
+        let first = -1;
+        for (i = 0; i < cnt; i++) {
+          if (
+            !BX.findChild(
+              tbl.rows[i],
+              { class: "title-search-separator" },
+              true
+            )
+          ) {
+            if (first == -1) first = i;
 
-		case 40: // down key - navigate down on search results
-			if(_this.RESULT.style.display == 'none')
-				_this.RESULT.style.display = 'block';
+            if (_this.currentRow < i) {
+              _this.currentRow = i;
+              break;
+            } else if (tbl.rows[i].className == "title-search-selected") {
+              tbl.rows[i].className = "";
+            }
+          }
+        }
 
-			let first = -1;
-			for(i = 0; i < cnt; i++)
-			{
-				if(!BX.findChild(tbl.rows[i], {'class':'title-search-separator'}, true))
-				{
-					if(first == -1)
-						first = i;
+        if (i == cnt && _this.currentRow != i) _this.currentRow = first;
 
-					if(_this.currentRow < i)
-					{
-						_this.currentRow = i;
-						break;
-					}
-					else if(tbl.rows[i].className == 'title-search-selected')
-					{
-						tbl.rows[i].className = '';
-					}
-				}
-			}
+        tbl.rows[_this.currentRow].className = "title-search-selected";
+        return true;
 
-			if(i == cnt && _this.currentRow != i)
-				_this.currentRow = first;
+      case 38: // up key - navigate up on search results
+        if (_this.RESULT.style.display == "none")
+          _this.RESULT.style.display = "block";
 
-			tbl.rows[_this.currentRow].className = 'title-search-selected';
-		return true;
+        let last = -1;
+        for (i = cnt - 1; i >= 0; i--) {
+          if (
+            !BX.findChild(
+              tbl.rows[i],
+              { class: "title-search-separator" },
+              true
+            )
+          ) {
+            if (last == -1) last = i;
 
-		case 38: // up key - navigate up on search results
-			if(_this.RESULT.style.display == 'none')
-				_this.RESULT.style.display = 'block';
+            if (_this.currentRow > i) {
+              _this.currentRow = i;
+              break;
+            } else if (tbl.rows[i].className == "title-search-selected") {
+              tbl.rows[i].className = "";
+            }
+          }
+        }
 
-			let last = -1;
-			for(i = cnt-1; i >= 0; i--)
-			{
-				if(!BX.findChild(tbl.rows[i], {'class':'title-search-separator'}, true))
-				{
-					if(last == -1)
-						last = i;
+        if (i < 0 && _this.currentRow != i) _this.currentRow = last;
 
-					if(_this.currentRow > i)
-					{
-						_this.currentRow = i;
-						break;
-					}
-					else if(tbl.rows[i].className == 'title-search-selected')
-					{
-						tbl.rows[i].className = '';
-					}
-				}
-			}
+        tbl.rows[_this.currentRow].className = "title-search-selected";
+        return true;
 
-			if(i < 0 && _this.currentRow != i)
-				_this.currentRow = last;
+      case 13:
+        if (_this.RESULT.style.display == "block") {
+          for (i = 0; i < cnt; i++) {
+            if (_this.currentRow == i) {
+              if (
+                !BX.findChild(
+                  tbl.rows[i],
+                  { class: "title-search-separator" },
+                  true
+                )
+              ) {
+                let a = BX.findChild(tbl.rows[i], { tag: "a" }, true);
+                if (a) {
+                  window.location = a.href;
+                  return true;
+                }
+              }
+            }
+          }
+        }
+        return false;
+    }
 
-			tbl.rows[_this.currentRow].className = 'title-search-selected';
-		return true;
+    return false;
+  };
 
-		case 13: // enter key - choose current search result
-			if(_this.RESULT.style.display == 'block')
-			{
-				for(i = 0; i < cnt; i++)
-				{
-					if(_this.currentRow == i)
-					{
-						if(!BX.findChild(tbl.rows[i], {'class':'title-search-separator'}, true))
-						{
-							let a = BX.findChild(tbl.rows[i], {'tag':'a'}, true);
-							if(a)
-							{
-								window.location = a.href;
-								return true;
-							}
-						}
-					}
-				}
-			}
-		return false;
-		}
+  this.onTimeout = function () {
+    _this.onChange(function () {
+      setTimeout(_this.onTimeout, 500);
+    });
+  };
 
-		return false;
-	};
+  this.onChange = function (callback) {
+    if (_this.running) return;
+    _this.running = true;
 
-	this.onTimeout = function()
-	{
-		_this.onChange(function(){
-			setTimeout(_this.onTimeout, 500);
-		});
-	};
+    if (
+      _this.INPUT.value != _this.oldValue &&
+      _this.INPUT.value != _this.startText
+    ) {
+      _this.oldValue = _this.INPUT.value;
+      if (_this.INPUT.value.length >= _this.arParams.MIN_QUERY_LEN) {
+        _this.cache_key = _this.arParams.INPUT_ID + "|" + _this.INPUT.value;
+        if (_this.cache[_this.cache_key] == null) {
+          if (_this.WAIT) {
+            let pos = BX.pos(_this.INPUT);
+            let height = pos.bottom - pos.top - 2;
+            _this.WAIT.style.top = pos.top + 1 + "px";
+            _this.WAIT.style.height = height + "px";
+            _this.WAIT.style.width = height + "px";
+            _this.WAIT.style.left = pos.right - height + 2 + "px";
+            _this.WAIT.style.display = "block";
+          }
 
-	this.onChange = function(callback)
-	{
-		if (_this.running)
-			return;
-		_this.running = true;
+          BX.ajax.post(
+            _this.arParams.AJAX_PAGE,
+            {
+              ajax_call: "y",
+              INPUT_ID: _this.arParams.INPUT_ID,
+              q: _this.INPUT.value,
+              l: _this.arParams.MIN_QUERY_LEN,
+            },
+            function (result) {
+              _this.cache[_this.cache_key] = result;
+              _this.ShowResult(result);
+              _this.currentRow = -1;
+              _this.EnableMouseEvents();
+              if (_this.WAIT) _this.WAIT.style.display = "none";
+              if (!!callback) callback();
+              _this.running = false;
+            }
+          );
+          return;
+        } else {
+          _this.ShowResult(_this.cache[_this.cache_key]);
+          _this.currentRow = -1;
+          _this.EnableMouseEvents();
+        }
+      } else {
+        _this.RESULT.style.display = "none";
+        _this.currentRow = -1;
+        _this.UnSelectAll();
+      }
+    }
+    if (!!callback) callback();
+    _this.running = false;
+  };
 
-		if(_this.INPUT.value != _this.oldValue && _this.INPUT.value != _this.startText)
-		{
-			_this.oldValue = _this.INPUT.value;
-			if(_this.INPUT.value.length >= _this.arParams.MIN_QUERY_LEN)
-			{
-				_this.cache_key = _this.arParams.INPUT_ID + '|' + _this.INPUT.value;
-				if(_this.cache[_this.cache_key] == null)
-				{
-					if(_this.WAIT)
-					{
-						let pos = BX.pos(_this.INPUT);
-						let height = (pos.bottom - pos.top)-2;
-						_this.WAIT.style.top = (pos.top+1) + 'px';
-						_this.WAIT.style.height = height + 'px';
-						_this.WAIT.style.width = height + 'px';
-						_this.WAIT.style.left = (pos.right - height + 2) + 'px';
-						_this.WAIT.style.display = 'block';
-					}
+  this.onScroll = function () {
+    if (
+      BX.type.isElementNode(_this.RESULT) &&
+      _this.RESULT.style.display !== "none" &&
+      _this.RESULT.innerHTML !== ""
+    ) {
+      _this.adjustResultNode();
+    }
+  };
 
-					BX.ajax.post(
-						_this.arParams.AJAX_PAGE,
-						{
-							'ajax_call':'y',
-							'INPUT_ID':_this.arParams.INPUT_ID,
-							'q':_this.INPUT.value,
-							'l':_this.arParams.MIN_QUERY_LEN
-						},
-						function(result)
-						{
-							_this.cache[_this.cache_key] = result;
-							_this.ShowResult(result);
-							_this.currentRow = -1;
-							_this.EnableMouseEvents();
-							if(_this.WAIT)
-								_this.WAIT.style.display = 'none';
-							if (!!callback)
-								callback();
-							_this.running = false;
-						}
-					);
-					return;
-				}
-				else
-				{
-					_this.ShowResult(_this.cache[_this.cache_key]);
-					_this.currentRow = -1;
-					_this.EnableMouseEvents();
-				}
-			}
-			else
-			{
-				_this.RESULT.style.display = 'none';
-				_this.currentRow = -1;
-				_this.UnSelectAll();
-			}
-		}
-		if (!!callback)
-			callback();
-		_this.running = false;
-	};
+  this.UnSelectAll = function () {
+    let tbl = BX.findChild(
+      _this.RESULT,
+      { tag: "table", class: "title-search-result" },
+      true
+    );
+    if (tbl) {
+      let cnt = tbl.rows.length;
+      for (let i = 0; i < cnt; i++) tbl.rows[i].className = "";
+    }
+  };
 
-	this.onScroll = function ()
-	{
-		if(BX.type.isElementNode(_this.RESULT)
-			&& _this.RESULT.style.display !== "none"
-			&& _this.RESULT.innerHTML !== ''
-		)
-		{
-			_this.adjustResultNode();
-		}
-	};
+  this.EnableMouseEvents = function () {
+    let tbl = BX.findChild(
+      _this.RESULT,
+      { tag: "table", class: "title-search-result" },
+      true
+    );
+    if (tbl) {
+      let cnt = tbl.rows.length;
+      for (let i = 0; i < cnt; i++)
+        if (
+          !BX.findChild(tbl.rows[i], { class: "title-search-separator" }, true)
+        ) {
+          tbl.rows[i].id = "row_" + i;
+          tbl.rows[i].onmouseover = function (e) {
+            if (_this.currentRow != this.id.substr(4)) {
+              _this.UnSelectAll();
+              this.className = "title-search-selected";
+              _this.currentRow = this.id.substr(4);
+            }
+          };
+          tbl.rows[i].onmouseout = function (e) {
+            this.className = "";
+            _this.currentRow = -1;
+          };
+        }
+    }
+  };
 
-	this.UnSelectAll = function()
-	{
-		let tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
-		if(tbl)
-		{
-			let cnt = tbl.rows.length;
-			for(let i = 0; i < cnt; i++)
-				tbl.rows[i].className = '';
-		}
-	};
+  this.onFocusLost = function (hide) {
+    setTimeout(function () {
+      _this.RESULT.style.display = "none";
+    }, 250);
+  };
 
-	this.EnableMouseEvents = function()
-	{
-		let tbl = BX.findChild(_this.RESULT, {'tag':'table','class':'title-search-result'}, true);
-		if(tbl)
-		{
-			let cnt = tbl.rows.length;
-			for(let i = 0; i < cnt; i++)
-				if(!BX.findChild(tbl.rows[i], {'class':'title-search-separator'}, true))
-				{
-					tbl.rows[i].id = 'row_' + i;
-					tbl.rows[i].onmouseover = function (e) {
-						if(_this.currentRow != this.id.substr(4))
-						{
-							_this.UnSelectAll();
-							this.className = 'title-search-selected';
-							_this.currentRow = this.id.substr(4);
-						}
-					};
-					tbl.rows[i].onmouseout = function (e) {
-						this.className = '';
-						_this.currentRow = -1;
-					};
-				}
-		}
-	};
+  this.onFocusGain = function () {
+    if (_this.RESULT.innerHTML.length) _this.ShowResult();
+  };
 
-	this.onFocusLost = function(hide)
-	{
-		setTimeout(function(){_this.RESULT.style.display = 'none';}, 250);
-	};
+  this.onKeyDown = function (e) {
+    if (!e) e = window.event;
 
-	this.onFocusGain = function()
-	{
-		if(_this.RESULT.innerHTML.length)
-			_this.ShowResult();
-	};
+    if (_this.RESULT.style.display == "block") {
+      if (_this.onKeyPress(e.keyCode)) return BX.PreventDefault(e);
+    }
+  };
 
-	this.onKeyDown = function(e)
-	{
-		if(!e)
-			e = window.event;
+  this.adjustResultNode = function () {
+    if (
+      !(
+        BX.type.isElementNode(_this.RESULT) &&
+        BX.type.isElementNode(_this.CONTAINER)
+      )
+    ) {
+      return { top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 };
+    }
 
-		if (_this.RESULT.style.display == 'block')
-		{
-			if(_this.onKeyPress(e.keyCode))
-				return BX.PreventDefault(e);
-		}
-	};
+    let pos = BX.pos(_this.CONTAINER);
 
-	this.adjustResultNode = function()
-	{
-		if(!(BX.type.isElementNode(_this.RESULT)
-			&& BX.type.isElementNode(_this.CONTAINER))
-		)
-		{
-			return { top: 0, right: 0, bottom: 0, left: 0, width: 0, height: 0 };
-		}
+    _this.RESULT.style.position = "absolute";
+    _this.RESULT.style.top = pos.bottom + 2 + "px";
+    _this.RESULT.style.left = pos.left + "px";
+    _this.RESULT.style.width = pos.width + "px";
 
-		let pos = BX.pos(_this.CONTAINER);
+    return pos;
+  };
 
-		_this.RESULT.style.position = 'absolute';
-		_this.RESULT.style.top = (pos.bottom + 2) + 'px';
-		_this.RESULT.style.left = pos.left + 'px';
-		_this.RESULT.style.width = pos.width + 'px';
+  this._onContainerLayoutChange = function () {
+    if (
+      BX.type.isElementNode(_this.RESULT) &&
+      _this.RESULT.style.display !== "none" &&
+      _this.RESULT.innerHTML !== ""
+    ) {
+      _this.adjustResultNode();
+    }
+  };
+  this.Init = function () {
+    this.CONTAINER = document.getElementById(this.arParams.CONTAINER_ID);
+    BX.addCustomEvent(
+      this.CONTAINER,
+      "OnNodeLayoutChange",
+      this._onContainerLayoutChange
+    );
 
-		return pos;
-	};
+    this.RESULT = document.body.appendChild(document.createElement("DIV"));
+    this.RESULT.className = "title-search-result";
+    this.INPUT = document.getElementById(this.arParams.INPUT_ID);
+    this.startText = this.oldValue = this.INPUT.value;
+    BX.bind(this.INPUT, "focus", function () {
+      _this.onFocusGain();
+    });
+    BX.bind(this.INPUT, "blur", function () {
+      _this.onFocusLost();
+    });
+    this.INPUT.onkeydown = this.onKeyDown;
 
-	this._onContainerLayoutChange = function()
-	{
-		if(BX.type.isElementNode(_this.RESULT)
-			&& _this.RESULT.style.display !== "none"
-			&& _this.RESULT.innerHTML !== ''
-		)
-		{
-			_this.adjustResultNode();
-		}
-	};
-	this.Init = function()
-	{
-		this.CONTAINER = document.getElementById(this.arParams.CONTAINER_ID);
-		BX.addCustomEvent(this.CONTAINER, "OnNodeLayoutChange", this._onContainerLayoutChange);
+    if (this.arParams.WAIT_IMAGE) {
+      this.WAIT = document.body.appendChild(document.createElement("DIV"));
+      this.WAIT.style.backgroundImage =
+        "url('" + this.arParams.WAIT_IMAGE + "')";
+      if (!BX.browser.IsIE()) this.WAIT.style.backgroundRepeat = "none";
+      this.WAIT.style.display = "none";
+      this.WAIT.style.position = "absolute";
+      this.WAIT.style.zIndex = "1100";
+    }
 
-		this.RESULT = document.body.appendChild(document.createElement("DIV"));
-		this.RESULT.className = 'title-search-result';
-		this.INPUT = document.getElementById(this.arParams.INPUT_ID);
-		this.startText = this.oldValue = this.INPUT.value;
-		BX.bind(this.INPUT, 'focus', function() {_this.onFocusGain()});
-		BX.bind(this.INPUT, 'blur', function() {_this.onFocusLost()});
-		this.INPUT.onkeydown = this.onKeyDown;
+    BX.bind(this.INPUT, "bxchange", function () {
+      _this.onChange();
+    });
 
-		if(this.arParams.WAIT_IMAGE)
-		{
-			this.WAIT = document.body.appendChild(document.createElement("DIV"));
-			this.WAIT.style.backgroundImage = "url('" + this.arParams.WAIT_IMAGE + "')";
-			if(!BX.browser.IsIE())
-				this.WAIT.style.backgroundRepeat = 'none';
-			this.WAIT.style.display = 'none';
-			this.WAIT.style.position = 'absolute';
-			this.WAIT.style.zIndex = '1100';
-		}
-
-		BX.bind(this.INPUT, 'bxchange', function() {_this.onChange()});
-
-		let fixedParent = BX.findParent(this.CONTAINER, BX.is_fixed);
-		if(BX.type.isElementNode(fixedParent))
-		{
-			BX.bind(window, 'scroll', BX.throttle(this.onScroll, 100, this));
-		}
-	};
-	BX.ready(function (){_this.Init(arParams)});
+    let fixedParent = BX.findParent(this.CONTAINER, BX.is_fixed);
+    if (BX.type.isElementNode(fixedParent)) {
+      BX.bind(window, "scroll", BX.throttle(this.onScroll, 100, this));
+    }
+  };
+  BX.ready(function () {
+    _this.Init(arParams);
+  });
 }
